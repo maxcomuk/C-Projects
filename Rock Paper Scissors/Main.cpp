@@ -17,23 +17,12 @@ const std::string scissors = "Scissors";
 // Generating a random response response from the computer //
 std::string generate_computers_move()
 {
+	// Using an array so we dont have to do loads of IF checks later //
+	const std::string objects[] = { rock, paper, scissors };
+
 	// Generating random number then comparing to return a result eg rock, scissors or paper //
 	int randomNum = (rand() % 3);
-	if (randomNum == 0)
-	{
-		return rock;
-	}
-	else if (randomNum == 1)
-	{
-		return paper;
-	}
-	else if (randomNum == 2)
-	{
-		return scissors;
-	}
-
-	// If for whatever reason the calculation failed we will exit the function with a warning string to check for later //
-	return "Invalid Number";
+	return objects[randomNum];
 }
 
 // Comparing results then returning the winner of the game //
@@ -107,11 +96,6 @@ int main()
 
 	// Generating Computers Move //
 	std::string computerMove = generate_computers_move();
-	if (computerMove == "Invalid Number")
-	{
-		std::cout << "\nComputer failed to generate move, please try again";
-		return 0;
-	}
 
 	// Comparing End Results //
 	char gameResults = generateWinner(playerMove, computerMove);
