@@ -2,7 +2,7 @@
 
 ![License](https://github.com/maxcomuk/Cpp-Projects/blob/main/LICENSE)
 
-## Step 1
+## Step 1: Include Necessary Libraries
 - we Include all the necessary libraries we will use from visual studio 2022
 
 ```
@@ -13,7 +13,7 @@
 #include <limits>
 ```
 
-## Step 2
+## Step 2: Define Global Constants
 - We create 3 constant variables that will represent rock, paper and scissors. The reason i do this, is so that we dont have to worry about spelling issues later on and it can end up being a bit ambigous having writing them again
 
 - One thing i learnt is that we cant use constexpr because std::string is not a literal type therefore the compiler wont know the value at compile time wich ruins the purpose of constexpr and it can even lead to some compilers failing to build because of this, so definatly something we will avoid by simply changing constexpr to a const string
@@ -23,7 +23,7 @@ const std::string paper = "Paper";
 const std::string scissors = "Scissors";
 ```
 
-## Step 3
+## Step 3: Generate Computer’s Move
 - Before starting this project i scanned through the project example wich was created here --> https://www.geeksforgeeks.org/cpp/rock-paper-scissor-game-in-cpp/ and after scanning through the project example i came to a conclusion that we will need to create a function that will basically generate a random response that we will later compare to get the winner.
 
 - I learnt a nice optimization technique that we can do to skip loads of if statements using an array to peform a lookup later on therefore removing the need to do an if statement for every possible outcome
@@ -39,7 +39,7 @@ std::string generate_computers_move()
 }
 ```
 
-## Step 4
+## Step 4: Determine the Winner
 - This is the function that will compare both results eg (players move and computers move) then after returning a character that will represent a loss, win or a draw. Note loads of if statement are peformed here to return all the possible outcomes although it can be a bit rebundant it gets the job done when you dont have loads of outcomes as a simple rock-paper-scissors game
 
 - It should be pretty self-explanatory but (L = Loss, W = Won, D = Draw)
@@ -87,6 +87,14 @@ char generateWinner(const std::string& playerMove, const std::string& computerMo
 }
 ```
 
+## Step 5: Main Program
+- This is the main entry point of the program and where all the logic is peformed
+
+- Overall we are basically grabbing the users input in a while loop and check if the input is valid if its invalid it will keep repeating until input / move is valid, once the user has inserted a valid type such as Rock we break out of the loop and generate a random response from the computer, once we have both a response from the user and the computer we will use the generateWinner function that will take 2 paremeters eg the player move and the computers move
+
+- After the function finishes comparing both responses it will return a character that represents the game state from above, we store that character in a char variable named gameResults wich really shouldnt have an 's' at the end as its not a plurar name but ye we will call it gameResults for now
+
+- Lastly we will peform 3 if statements that will prompt the user if he has Won, Loss or drawed with the computer. Note i put (return 0) at the end but that is completly optional although i dont know much about other compilers and if they require it
 ```
 // Creating the entry point of our program //
 int main()
@@ -140,3 +148,10 @@ int main()
 	return 0;
 }
 ```
+
+# Installation Proccess
+- Copy and paste method -
+Copy the whole main.cpp file and then paste it into your ide then compile it
+
+- File download method -
+Download the file and then simply open it with your prefferd ide to compile
