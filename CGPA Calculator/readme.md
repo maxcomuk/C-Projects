@@ -10,3 +10,12 @@ Overall our goal is to get how many courses the user has took then get the grade
 // --------------------- //
 //     credit hours      //
 ```
+
+## Step 1: Including Libraries
+```
+#include <iostream>
+#include <string>
+#include <limits>
+#include <vector>
+#include <iomanip>
+```
