@@ -127,7 +127,7 @@ double calculateGPA(const std::vector <coursesData>& struct_list) {
 ```
 
 ## Step 8: Main Entry
-We control the flow of the program and functions here then after we collect the end result (GPA) we prompt the user with the final result to the exact 0.00 decimal
+We control the flow of the program and functions here then after we collect the end result (GPA) we prompt the user with the final result to the exact 0.00 decimal using the iomanip library
 ```
 int main()
 {
