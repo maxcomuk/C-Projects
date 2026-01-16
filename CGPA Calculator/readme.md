@@ -5,7 +5,8 @@ Before starting this project i admit it was very confusing at first to understan
 
 Overall our goal is to get how many courses the user has took then get the grade and the credit hours for those exams (Note. credit hours is part of the grading system and will effect the total gpa) then we optionally get the courses name to make it realistic (eg maths, english, computer science etc) then we apply this math formula below that will get the total gpa for the user.
 
-grade * credit hours
---------------------
-   credit hours
-
+```
+//  grade * credit hours //
+// --------------------- //
+//     credit hours      //
+```
