@@ -220,7 +220,7 @@ int main()
 	system("cls");
 
 	// Creating user1's class data for the minigame //
-	UserData user1(9e9);
+	UserData user1;
 	user1.set_difficulty_level();
 	clearInputStream();
 	system("cls");
