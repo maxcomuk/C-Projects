@@ -220,7 +220,7 @@ int main()
 	system("cls");
 
 	// Creating user1's class data for the minigame //
-	UserData user1;
+	UserData user1(9e9);
 	user1.set_difficulty_level();
 	clearInputStream();
 	system("cls");
@@ -259,7 +259,7 @@ int main()
 		else if (option == 3)
 		{
 			user1.set_difficulty_level();
-			option = 1;
+			option = displayOptions();
 		}
 
 		// Option 4 or anything else means we will exit the program as the user most likely wants to quit //
