@@ -47,7 +47,6 @@ We do this by using multiple if statements for each operator and returning a num
 Note: Parentheses are always calculated first regardless of these values. We handle the parenthesis logic independently, meaning we bypass the priority check and simply prioritize them if they exist in the equation.
 
 ##
-
 Finally, we solve the equation by taking two values and an operator. The function (named apply_operation_order) identifies the operator, performs the calculation independently, and returns the result to the calling function. This process is repeated until all values have been calculated and no operators remain in the stack (named operators).
 ```
 class Calculator
