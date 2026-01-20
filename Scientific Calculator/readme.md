@@ -1,1 +1,3 @@
-# Documentation Coming Soon
+# Scientific-Calculator Documentation
+
+## Goal of project:
