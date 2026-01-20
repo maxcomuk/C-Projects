@@ -250,7 +250,6 @@ int main()
 	std::cout << "-->Press Enter to begin . . ." << "\n";
 	std::cin.get();
 
-
 	// Creating a while loop so we keep the program running the user exits manually when prompted //
 	while (true)
 	{
