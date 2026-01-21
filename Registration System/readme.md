@@ -218,9 +218,11 @@ int main()
 ```
 
 # Installation Process
-- Copy & Paste Method -
+-- Copy & Paste Method --
 1. download the sqlite3 amalgamation file from --> [Click Me](https://sqlite.org/2026/sqlite-amalgamation-3510200.zip).
+
 2. extract the file using winrar or your prefferd tool and include both of these files (sqlite3.c & sqlite3.h) into your project (visual studio 2022) and if you are using visual studio 2022 then right click on the file inside your project files list after you have dragged and dropped it here and press include (this includes the file to the project and allows us to acess it). Note you must do this for both files (.c & .h file).
+
 3. Simply copy the whole of Main.cpp file and then paste it in your prefferd ide to compile
 
 - File Download Method -
