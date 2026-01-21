@@ -1,5 +1,7 @@
 # Casino-Guessing-Game Documentation
 
+![License](https://github.com/maxcomuk/Cpp-Projects/blob/main/LICENSE)
+
 ## Step 1: Including Libraries
 ```
 #include <iostream>
