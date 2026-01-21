@@ -2,4 +2,4 @@
 
 ![License](https://github.com/maxcomuk/Cpp-Projects/blob/main/LICENSE)
 
-## Main Goal ##
+## Main Goal:
