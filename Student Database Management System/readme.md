@@ -116,3 +116,113 @@ void showDatabaseMenu()
 ```
 
 ---
+## Step 5: Including Header File & Creating Authmanager Class
+### Main.cpp Documentation Below
+The AuthManager class handles user login and registration. In this system, the logged-in user acts as the Admin, gaining control over the student's and course's data.
+
+We use a boolean (named userLoggedIn) to track the session state. We also provide a LogOut function to reset this state. While tracking the login state is simple here, maintaining this boolean is vital for security checks if the project expands in the future.
+
+##
+
+The loginUser function performs a database lookup using the loginSQL script to securely check if the input credentials match any record in the USERS table. If a match is found then we set userLoggedIn to true and break out of the "while" loop.
+
+##
+
+The registerUser function will insert a new user into the database USERS table using the saveSQL script, first it will check if the user's USERNAME doesnt arleady exist then it will insert the new user to the table and exit out of the loop. Goal of the program is to register the user then force the user to login to that account rather than the user being logged in straight after creating an account.
+
+The registerUser function inserts a new user into the database's USERS table using the saveSQL script. It first checks if the provided USERNAME already exists, if the name is unique then it inserts the new user  into the table. The goal of this flow is to register the account and then require the user to manually log in, rather than logging them in automatically immediately after registration.
+```
+#include "Main.h"
+
+
+class AuthManager
+{
+private:
+	std::string username;
+	std::string password;
+
+	bool userLoggedIn = false;
+public:
+	bool logginUser(sqlite3*& db)
+	{
+		const char* loginSQL = "SELECT count(*) FROM USERS WHERE USERNAME = ? AND PASSWORD = ?;";
+		sqlite3_stmt* login_stmt;
+
+		std::cout << "\nUsername: ";
+		std::getline(std::cin, username);
+
+		std::cout << "Password: ";
+		std::getline(std::cin, password);
+
+		if (sqlite3_prepare_v2(db, loginSQL, -1, &login_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to prepare sqlite3: " << sqlite3_errmsg(db) << '\n';
+			return false;
+		}
+
+		sqlite3_bind_text(login_stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(login_stmt, 2, password.c_str(), -1, SQLITE_TRANSIENT);
+
+		int count = 0;
+		if (sqlite3_step(login_stmt) == SQLITE_ROW)
+		{
+			count = sqlite3_column_int(login_stmt, 0);
+		}
+
+		sqlite3_finalize(login_stmt);
+
+		if (count == 0)
+		{
+			std::cout << "\nInvalid Credentials: Please try again\n";
+			return false;
+		}
+		else
+		{
+			std::cout << "\nLogged Into Account Successfully\n";
+			userLoggedIn = true;
+			return true;
+		}
+
+		return false;
+	}
+
+	void registerUser(sqlite3*& db)
+	{
+		const char* saveSQL = "INSERT INTO USERS (USERNAME, PASSWORD) VALUES (?, ?);";
+		sqlite3_stmt* save_stmt;
+
+		std::cout << "\nUsername: ";
+		std::getline(std::cin, username);
+
+		std::cout << "Password: ";
+		std::getline(std::cin, password);
+
+		if (sqlite3_prepare_v2(db, saveSQL, -1, &save_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to prepare sqlite3: " << sqlite3_errmsg(db) << '\n';
+			return;
+		}
+
+		sqlite3_bind_text(save_stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(save_stmt, 2, password.c_str(), -1, SQLITE_TRANSIENT);
+
+		int response = sqlite3_step(save_stmt);
+		if (response == SQLITE_DONE)
+		{
+			std::cout << "\nAccount Registered Successfully\n";
+		}
+		else if (response == SQLITE_CONSTRAINT)
+		{
+			std::cout << "\nError: Account Arleady Exists\n";
+		}
+		else {
+			std::cerr << "Error: " << sqlite3_errmsg(db) << '\n';
+		}
+
+		sqlite3_finalize(save_stmt);
+	}
+
+	void LogOut() { userLoggedIn = false; };
+};
+
+```
