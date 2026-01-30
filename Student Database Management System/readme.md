@@ -811,6 +811,6 @@ Firstly you will need to include sqlite3.c and sqlite3.h to your project (preffe
 1. Download both Main.cpp and Main.h files
 2. Compile the project and run the program
 
-Note. You must have both sqlite3.c and sqlite3.h in order for it to work as this will be required for creating the SQL database file
+Note. You must have both sqlite3.c and sqlite3.h included in your project in order for it to work as this will be required for creating the SQL database file
 
 # Ide I used [Visual studio 2022](https://www.techspot.com/downloads/7493-visual-studio-2022.html)
