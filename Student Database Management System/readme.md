@@ -270,3 +270,425 @@ void setup_user_registration(AuthManager& user, sqlite3*& db)
 	}
 }
 ```
+
+## Step 7: School Database Struct
+The schoolHandler struct serves as the core logic engine for the student database management system. It encapsulates all database operations—such as searching, adding, and removing records—ensuring. setup_database_management will be handling all the logic and require all the functions from this struct to handle each option the user selects. 
+
+searchUser: This function prompts for a username and performs a SQL SELECT query. It uses sqlite3_prepare_v2 to compile the query and sqlite3_bind_text to safely handle the input. If sqlite3_step finds a matching row, it retrieves the data using sqlite3_column_text and sqlite3_column_int to display the student's full profile.
+
+addStudent: Before inserting new data, this function performs a "duplicate check" by searching for the requested username. If the student already exists, the process is aborted to prevent data redundancy. If the name is unique, it executes an INSERT INTO statement, binding the name, age, birthplace, and religion to the database.
+
+removeStudent: Verifies if a student exists by name. If found, it executes a DELETE command to remove that student from the STUDENTS table. This prevents errors that occur when trying to delete non-existent records.
+
+displayStudents: This function executes a broad SELECT query to grab the entire STUDENTS table. It then uses a while loop to iterate through every row, each time sqlite3_step returns SQLITE_ROW, the program prints that specific student's details until the end of the table is reached.
+
+displayCourses: Similar to the student display, this function targets the COURSES table. It loops through the available entries and prints the subject name alongside its required passing grade. It includes a boolean check (coursesExist) to inform the user if the list is currently empty.
+
+addCourse: This function validates the course name and passing grade provided by the user. It first checks for an existing entry to avoid duplicates. If the course is new, it prepares a SQL statement and uses sqlite3_step to finalize the insertion into the COURSES table.
+
+removeCourse: Similar to the student removal, this function targets the COURSES table. It requires both the course name and the pass grade to confirm the exact record for deletion. It uses sqlite3_bind to safely pass these parameters into the SQL statement before executing the delete command.
+
+searchCourse: This function allows the user to look up a specific subject. It performs a targeted SELECT query based on the course name and pass grade. If the course is found, it pulls the data from the result set using sqlite3_column functions; otherwise, it notifies the user that the course is not in the system.
+
+```
+struct schoolHandler
+{
+	void searchUser(sqlite3*& db)
+	{
+		std::string userInput, username, country, religion;
+		int age;
+
+		std::cout << "Username: ";
+		std::getline(std::cin, userInput);
+
+		const char* checkSQL = "SELECT NAME, AGE, PLACE_OF_BIRTH, RELIGION FROM STUDENTS WHERE NAME = ?;";
+		sqlite3_stmt* check_stmt;
+
+		if (sqlite3_prepare_v2(db, checkSQL, -1, &check_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to load sqlite3: " << sqlite3_errmsg(db) << '\n';
+			return;
+		}
+
+		sqlite3_bind_text(check_stmt, 1, userInput.c_str(), -1, SQLITE_TRANSIENT);
+
+		if (sqlite3_step(check_stmt) == SQLITE_ROW)
+		{
+			std::cout << "\n**Student Details**\n";
+			std::cout << "Name: " << sqlite3_column_text(check_stmt, 0) << '\n';
+			std::cout << "Age: " << sqlite3_column_int(check_stmt, 1) << '\n';
+			std::cout << "Place Of Birth: " << sqlite3_column_text(check_stmt, 2) << '\n';
+			std::cout << "Religion: " << sqlite3_column_text(check_stmt, 3) << '\n';
+		}
+		else
+		{
+			std::cout << "\nStudent Not Found!\n";
+		}
+
+		sqlite3_finalize(check_stmt);
+	}
+
+	void addStudent(sqlite3*& db)
+	{
+		std::string username, country, religion;
+		int age;
+
+		std::cout << "Name: ";
+		std::getline(std::cin, username);
+
+		std::cout << "Age: ";
+		if (!(std::cin >> age))
+		{
+			std::cout << "\nInvalid Input: Please try again\n";
+			ClearInputBuffer();
+			return;
+		}
+
+		ClearInputBuffer();
+
+		std::cout << "Place of birth: ";
+		std::getline(std::cin, country);
+
+		std::cout << "Religion: ";
+		std::getline(std::cin, religion);
+
+		const char* checkSQL = "SELECT count(*) FROM STUDENTS WHERE NAME = ?;";
+		sqlite3_stmt* check_stmt;
+
+		if (sqlite3_prepare_v2(db, checkSQL, -1, &check_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to load sqlite3: " << sqlite3_errmsg(db);
+			return;
+		}
+
+		sqlite3_bind_text(check_stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_step(check_stmt);
+
+		int count = sqlite3_column_int(check_stmt, 0);
+		sqlite3_finalize(check_stmt);
+
+		if (count > 0)
+		{
+			std::cout << "\nInvalid Username: Student Arleady Exists\n";
+			return;
+		}
+
+		const char* saveSQL = "INSERT INTO STUDENTS (NAME, AGE, PLACE_OF_BIRTH, RELIGION) VALUES (?, ?, ?, ?);";
+		sqlite3_stmt* save_stmt;
+
+		if (sqlite3_prepare_v2(db, saveSQL, -1, &save_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to load sqlite3: " << sqlite3_errmsg(db);
+			return;
+		}
+
+		sqlite3_bind_text(save_stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_int(save_stmt, 2, age);
+		sqlite3_bind_text(save_stmt, 3, country.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(save_stmt, 4, religion.c_str(), -1, SQLITE_TRANSIENT);
+
+		int response = sqlite3_step(save_stmt);
+		if (response != SQLITE_DONE)
+			std::cerr << "\nError: " << sqlite3_errmsg(db) << '\n';
+		else
+			std::cout << "\nStudent Registered Successfully\n";
+
+		sqlite3_finalize(save_stmt);
+	}
+
+	void removeStudent(sqlite3*& db)
+	{
+		std::string username;
+
+		std::cout << "Username: ";
+		std::getline(std::cin, username);
+
+		const char* checkSQL = "SELECT count(*) FROM STUDENTS WHERE NAME = ?;";
+		sqlite3_stmt* check_stmt;
+
+		if (sqlite3_prepare_v2(db, checkSQL, -1, &check_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to load sqlite3: " << sqlite3_errmsg(db) << '\n';
+			return;
+		}
+
+		sqlite3_bind_text(check_stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+		int count = 0;
+		if (sqlite3_step(check_stmt) == SQLITE_ROW)
+		{
+			count = sqlite3_column_int(check_stmt, 0);
+		}
+		sqlite3_finalize(check_stmt);
+
+		if (count == 0)
+		{
+			std::cout << "\nStudent Not Found!\n";
+			return;
+		}
+
+		const char* deleteSQL = "DELETE FROM STUDENTS WHERE NAME = ?;";
+		sqlite3_stmt* delete_stmt;
+
+		if (sqlite3_prepare_v2(db, deleteSQL, -1, &delete_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to load sqlite3: " << sqlite3_errmsg(db) << '\n';
+			return;
+		}
+
+		sqlite3_bind_text(delete_stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+		if (sqlite3_step(delete_stmt) != SQLITE_DONE)
+		{
+			std::cout << "\nError Removing Student" << sqlite3_errmsg(db) << '\n';
+		}
+		else
+		{
+			std::cout << "\nRemoved Student Successfully\n";
+		}
+
+		sqlite3_finalize(delete_stmt);
+	}
+
+	void displayStudents(sqlite3*& db)
+	{
+		const char* checkSQL = "SELECT NAME, AGE, PLACE_OF_BIRTH, RELIGION FROM STUDENTS;";
+		sqlite3_stmt* check_stmt;
+
+		if (sqlite3_prepare_v2(db, checkSQL, -1, &check_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to load sqlite3: " << sqlite3_errmsg(db) << '\n';
+			return;
+		}
+
+		std::cout << "\n**** Students List ****\n";
+
+		bool usersExist = false;
+		int counter = 0;
+
+		while (sqlite3_step(check_stmt) == SQLITE_ROW)
+		{
+			usersExist = true;
+			counter++;
+
+			std::cout << "STUDENT " << counter << '\n';
+			std::cout << "Name: " << sqlite3_column_text(check_stmt, 0) << '\n';
+			std::cout << "Age: " << sqlite3_column_int(check_stmt, 1) << '\n';
+			std::cout << "Place Of Birth: " << sqlite3_column_text(check_stmt, 2) << '\n';
+			std::cout << "Religion: " << sqlite3_column_text(check_stmt, 3) << '\n';
+			std::cout << "---------------------------------\n\n";
+		}
+
+		if (!usersExist)
+			std::cout << "\nNot Found Users\n";
+
+		sqlite3_finalize(check_stmt);
+	}
+
+	void displayCourses(sqlite3*& db)
+	{
+		const char* checkSQL = "SELECT COURSE, PASSGRADE FROM COURSES;";
+		sqlite3_stmt* check_stmt;
+
+		if (sqlite3_prepare_v2(db, checkSQL, -1, &check_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to load sqlite3: " << sqlite3_errmsg(db) << '\n';
+			return;
+		}
+
+		std::cout << "\n**** Courses List ****\n";
+
+		bool coursesExist = false;
+		int counter = 0;
+
+		while (sqlite3_step(check_stmt) == SQLITE_ROW)
+		{
+			coursesExist = true;
+			counter++;
+
+			std::cout << "COURSE " << counter << '\n';
+			std::cout << "Subject: " << sqlite3_column_text(check_stmt, 0) << '\n';
+			std::cout << "Pass Grade: " << sqlite3_column_int(check_stmt, 1) << '\n';
+			std::cout << "---------------------------------\n\n";
+		}
+
+		if (!coursesExist)
+			std::cout << "\nNot Found Courses\n";
+
+		sqlite3_finalize(check_stmt);
+	}
+
+	void addCourse(sqlite3*& db)
+	{
+		std::string courseName;
+		int passGrade;
+
+		std::cout << "Subject: ";
+		std::getline(std::cin, courseName);
+
+		std::cout << "Pass Grade: ";
+		if (!(std::cin >> passGrade))
+		{
+			ClearInputBuffer();
+
+			std::cout << "\nInvalid Input: Please try again\n";
+			return;
+		}
+
+		ClearInputBuffer();
+
+		const char* checkSQL = "SELECT count(*) FROM COURSES WHERE COURSE = ?;";
+		sqlite3_stmt* check_stmt;
+
+		if (sqlite3_prepare_v2(db, checkSQL, -1, &check_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to load sqlite3: " << sqlite3_errmsg(db) << '\n';
+			return;
+		}
+
+		sqlite3_bind_text(check_stmt, 1, courseName.c_str(), -1, SQLITE_TRANSIENT);
+
+		int count = 0;
+		if (sqlite3_step(check_stmt) == SQLITE_ROW)
+		{
+			count = sqlite3_column_int(check_stmt, 0);
+		}
+
+		sqlite3_finalize(check_stmt);
+
+		if (count > 0)
+		{
+			std::cout << "\nCourse Already Exists!\n";
+			return;
+		}
+
+		const char* saveSQL = "INSERT INTO COURSES (COURSE, PASSGRADE) VALUES (?, ?);";
+		sqlite3_stmt* save_stmt;
+
+		if (sqlite3_prepare_v2(db, saveSQL, -1, &save_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to load sqlite3: " << sqlite3_errmsg(db) << '\n';
+			return;
+		}
+
+		sqlite3_bind_text(save_stmt, 1, courseName.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_int(save_stmt, 2, passGrade);
+
+		int response = sqlite3_step(save_stmt);
+		if (response != SQLITE_DONE)
+			std::cout << "\nFailed To Save Course: " << sqlite3_errmsg(db) << '\n';
+		else
+			std::cout << "\nCourse Saved Successfully\n";
+
+		sqlite3_finalize(save_stmt);
+	}
+
+	void removeCourse(sqlite3*& db)
+	{
+		std::string courseName;
+		int passGrade;
+
+		std::cout << "Course Name: ";
+		std::getline(std::cin, courseName);
+
+		std::cout << "Pass Grade: ";
+		if (!(std::cin >> passGrade))
+		{
+			ClearInputBuffer();
+
+			std::cout << "\nInvalid Input: Please try again\n";
+			return;
+		}
+
+		ClearInputBuffer();
+
+		const char* checkSQL = "SELECT count(*) FROM COURSES WHERE COURSE = ? AND PASSGRADE = ?;";
+		sqlite3_stmt* check_stmt;
+
+		if (sqlite3_prepare_v2(db, checkSQL, -1, &check_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to load sqlite3: " << sqlite3_errmsg(db) << '\n';
+			return;
+		}
+
+		sqlite3_bind_text(check_stmt, 1, courseName.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_int(check_stmt, 2, passGrade);
+
+		int count = 0;
+		if (sqlite3_step(check_stmt) == SQLITE_ROW)
+			count = sqlite3_column_int(check_stmt, 0);
+		sqlite3_finalize(check_stmt);
+
+		if (count == 0)
+		{
+			std::cout << "\nCourse Not Found: Please try again\n";
+			return;
+		}
+
+		const char* deleteSQL = "DELETE FROM COURSES WHERE COURSE = ? AND PASSGRADE = ?;";
+		sqlite3_stmt* delete_stmt;
+
+		if (sqlite3_prepare_v2(db, deleteSQL, -1, &delete_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to load sqlite3: " << sqlite3_errmsg(db) << '\n';
+			return;
+		}
+
+		sqlite3_bind_text(delete_stmt, 1, courseName.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_int(delete_stmt, 2, passGrade);
+
+		if (sqlite3_step(delete_stmt) != SQLITE_DONE)
+			std::cerr << "\nFailed To Delete Course: " << sqlite3_errmsg(db) << '\n';
+		else
+			std::cout << "\nCourse Removed Successfully\n";
+
+		sqlite3_finalize(delete_stmt);
+	}
+
+	void searchCourse(sqlite3*& db)
+	{
+		std::string courseName;
+		int passGrade;
+
+		std::cout << "Course Name: ";
+		std::getline(std::cin, courseName);
+
+		std::cout << "Pass Grade: ";
+		if (!(std::cin >> passGrade))
+		{
+			ClearInputBuffer();
+
+			std::cout << "\nInvalid Input: Please try again\n";
+			return;
+		}
+
+		ClearInputBuffer();
+
+		const char* checkSQL = "SELECT COURSE, PASSGRADE FROM COURSES WHERE COURSE = ? AND PASSGRADE = ?;";
+		sqlite3_stmt* check_stmt;
+
+		if (sqlite3_prepare_v2(db, checkSQL, -1, &check_stmt, nullptr) != SQLITE_OK)
+		{
+			std::cerr << "\nFailed to load sqlite3: " << sqlite3_errmsg(db);
+			return;
+		}
+
+		sqlite3_bind_text(check_stmt, 1, courseName.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_int(check_stmt, 2, passGrade);
+
+		if (sqlite3_step(check_stmt) == SQLITE_ROW)
+		{
+			std::cout << "\nSubject: " << sqlite3_column_text(check_stmt, 0) << '\n';
+			std::cout << "Pass Grade: " << sqlite3_column_int(check_stmt, 1) << '\n';
+		}
+		else
+		{
+			std::cout << "\nNot Found Course!\n";
+		}
+
+		sqlite3_finalize(check_stmt);
+	}
+};
+```
+
+## Step 8
