@@ -67,7 +67,7 @@ The constructor initializes the db pointer to nullptr, indicating that no databa
 
 The destructor ensures proper resource management. If the database was opened (db is not nullptr), it safely closes the connection using sqlite3_close(db) and resets the pointer to nullptr. This guarantees that the database connection is properly released when the Database object goes out of scope, preventing resource leaks.
 
-3. OpenDatabase
+2. OpenDatabase
 The OpenDatabase method takes a fileName parameter and attempts to open (or create, if it does not exist) a SQLite database file using sqlite3_open(). If the operation fails, it prints the error message, closes any partially opened connection, resets the pointer, and returns false. If successful, the db pointer now represents a valid database connection and the method returns true.
 
 3. CreateTable
