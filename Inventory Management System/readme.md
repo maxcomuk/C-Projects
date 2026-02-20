@@ -10,3 +10,8 @@ Inventory Management System allows the (user / admin) control the Inventory of a
 - Inventory Registration
 - Inventory Management
 - Logout / Exit program compatibility
+
+### Things to know
+As this is my first time building an inventory management system and using multiple files, I will be including extra code such as declaring the constructor or deconstructor but it may not be used so you can delete these parts as it was intended for users that may build on this project. Its also recommended to rename the files to your likings such as 'db' can be renamed to database.
+
+## Step 1: 
