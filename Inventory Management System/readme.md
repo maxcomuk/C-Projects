@@ -61,7 +61,7 @@ public:
 };
 ```
 
-Step 2: Database.cpp
+## Step 2: Database.cpp
 1. Constructor & Destructor
 The constructor initializes the db pointer to nullptr, indicating that no database connection is active.
 
