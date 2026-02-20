@@ -62,88 +62,156 @@ public:
 ```
 
 ## Step 2: Database.cpp
-- Constructor & Destructor
-The constructor initializes the db pointer to nullptr, indicating that no database connection is active. The destructor ensures proper resource management. If the database was opened (db is not nullptr), it safely closes the connection using sqlite3_close(db) and resets the pointer to nullptr. This guarantees that the database connection is properly released when the Database object goes out of scope, preventing resource leaks.
 
-2. OpenDatabase
-The OpenDatabase method takes a fileName parameter and attempts to open (or create, if it does not exist) a SQLite database file using sqlite3_open(). If the operation fails, it prints the error message, closes any partially opened connection, resets the pointer, and returns false. If successful, the db pointer now represents a valid database connection and the method returns true.
+### 1. Constructor & Destructor
+The constructor initializes the `db` pointer to `nullptr`, indicating that no database connection is active.
 
-3. CreateTable
-The CreateTable method dynamically builds a SQL query using the provided tableName and columns parameters. It executes a CREATE TABLE IF NOT EXISTS statement to ensure the table is created only if it does not already exist.
+The destructor ensures proper resource management. If the database was opened (`db` is not `nullptr`), it safely closes the connection using `sqlite3_close(db)` and resets the pointer to `nullptr`. This guarantees that the database connection is properly released when the `Database` object goes out of scope, preventing resource leaks.
+
+---
+
+### 2. OpenDatabase
+
+The `OpenDatabase` method takes a `fileName` parameter and attempts to open (or create, if it does not exist) a SQLite database file using `sqlite3_open()`.
+
+If the operation fails, it prints the error message, closes any partially opened connection, resets the pointer, and returns `false`.
+
+If successful, the `db` pointer now represents a valid database connection and the method returns `true`.
+
+---
+
+### 3. CreateTable
+
+The `CreateTable` method dynamically builds a SQL query using the provided `tableName` and `columns` parameters. It executes a `CREATE TABLE IF NOT EXISTS` statement to ensure the table is created only if it does not already exist.
 
 In this project, it is used to create:
 
-USERS – stores registered users for authentication.
-INVENTORY – stores all inventory-related data for the management system.
+- **USERS** – stores registered users for authentication.
+- **INVENTORY** – stores all inventory-related data for the management system.
 
-The method returns true if the table is successfully created, otherwise false.
+The method returns `true` if the table is successfully created, otherwise `false`.
 
-4. ValidateUser
-This method verifies whether a user exists in the USERS table by matching the provided username and password. It uses a prepared statement with parameter binding to prevent SQL injection. The query counts matching rows. If the count is greater than 0 → returns true. Otherwise → returns false. This method is used during the login process.
+---
 
-5. InsertUser
-The InsertUser method inserts a new user record into the USERS table using parameter binding. Returns true if insertion is successful (SQLITE_DONE). Returns false if the operation fails (e.g., duplicate user constraint or other database error). This method supports user registration.
+### 4. ValidateUser
 
-6. RemoveUser
-This method removes a user from the USERS table by matching both username and password. After execution, it checks sqlite3_changes(db) to confirm that a row was actually deleted. Returns true if a user was removed. Returns false if no matching user exists or an error occurs.
+This method verifies whether a user exists in the `USERS` table by matching the provided `username` and `password`.
 
-7. ValidateItem
-The ValidateItem method checks whether an inventory item exists in the INVENTORY table using the productName field from the InventoryItem struct.
+It uses a prepared statement with parameter binding to prevent SQL injection. The query counts matching rows.
+
+- If the count is greater than 0 → returns `true`.
+- Otherwise → returns `false`.
+
+This method is used during the login process.
+
+---
+
+### 5. InsertUser
+
+The `InsertUser` method inserts a new user record into the `USERS` table using parameter binding.
+
+- Returns `true` if insertion is successful (`SQLITE_DONE`).
+- Returns `false` if the operation fails (e.g., duplicate user constraint or other database error).
+
+This method supports user registration.
+
+---
+
+### 6. RemoveUser
+
+This method removes a user from the `USERS` table by matching both `username` and `password`.
+
+After execution, it checks `sqlite3_changes(db)` to confirm that a row was actually deleted.
+
+- Returns `true` if a user was removed.
+- Returns `false` if no matching user exists or an error occurs.
+
+---
+
+### 7. ValidateItem
+
+The `ValidateItem` method checks whether an inventory item exists in the `INVENTORY` table using the `productName` field from the `InventoryItem` struct.
 
 If a matching row is found:
-The struct is populated with all retrieved database values.
-Default fallback values are assigned if any column is NULL.
-Returns true.
 
-If no record is found, it returns false.
+- The struct is populated with all retrieved database values.
+- Default fallback values are assigned if any column is `NULL`.
+- Returns `true`.
 
-8. ModifyItem
-This method updates an existing inventory item. It locates the item using originalProductName and updates all relevant fields using the new values provided in the InventoryItem struct. The CREATED_AT column is updated automatically using CURRENT_TIMESTAMP.
+If no record is found, it returns `false`.
+
+---
+
+### 8. ModifyItem
+
+This method updates an existing inventory item.
+
+It locates the item using `originalProductName` and updates all relevant fields using the new values provided in the `InventoryItem` struct. The `CREATED_AT` column is updated automatically using `CURRENT_TIMESTAMP`.
 
 After execution:
-If at least one row was modified → returns true.
-If no matching product exists or an error occurs → returns false.
 
-9. InsertItem
-The InsertItem method inserts a new record into the INVENTORY table using the data stored in the InventoryItem struct.
+- If at least one row was modified → returns `true`.
+- If no matching product exists or an error occurs → returns `false`.
 
-Returns true if the insertion succeeds.
-Returns false if the product already exists (constraint failure) or another database error occurs.
+---
+
+### 9. InsertItem
+
+The `InsertItem` method inserts a new record into the `INVENTORY` table using the data stored in the `InventoryItem` struct.
+
+- Returns `true` if the insertion succeeds.
+- Returns `false` if the product already exists (constraint failure) or another database error occurs.
 
 This method is used to add new products to the inventory system.
 
-10. RemoveItem
-This method deletes an item from the INVENTORY table using the provided productName.
+---
 
-After execution, it verifies that a row was deleted by checking sqlite3_changes(db).
-Returns true if the product was successfully removed.
-Returns false if the product does not exist or if a database error occurs.
+### 10. RemoveItem
 
-11. GetItem
-The GetItem method retrieves a specific inventory item by matching both category and productName from the provided InventoryItem struct.
+This method deletes an item from the `INVENTORY` table using the provided `productName`.
+
+After execution, it verifies that a row was deleted by checking `sqlite3_changes(db)`.
+
+- Returns `true` if the product was successfully removed.
+- Returns `false` if the product does not exist or if a database error occurs.
+
+---
+
+### 11. GetItem
+
+The `GetItem` method retrieves a specific inventory item by matching both `category` and `productName` from the provided `InventoryItem` struct.
 
 If a matching row is found:
-The remaining fields (amount, price, size, description, createdAt) are populated from the database.
-Returns true.
-If no match is found, it prints a message and returns false.
+
+- The remaining fields (`amount`, `price`, `size`, `description`, `createdAt`) are populated from the database.
+- Returns `true`.
+
+If no match is found, it prints a message and returns `false`.
 
 This method is useful when searching for a specific product within a known category.
 
-12. GetAllItems
-The GetAllItems method retrieves all records from the INVENTORY table.
+---
 
-Process overview:
-A SELECT query is prepared to fetch every column from the table.
-The method iterates through each row using sqlite3_step() inside a while loop.
+### 12. GetAllItems
+
+The `GetAllItems` method retrieves all records from the `INVENTORY` table.
+
+#### Process overview:
+
+- A `SELECT` query is prepared to fetch every column from the table.
+- The method iterates through each row using `sqlite3_step()` inside a `while` loop.
 
 For each row:
-A new InventoryItem object is created.
-All database fields are extracted and assigned to the object.
-Default fallback values are used if any field is NULL.
-The fully populated object is pushed into the storedItems vector.
+
+- A new `InventoryItem` object is created.
+- All database fields are extracted and assigned to the object.
+- Default fallback values are used if any field is `NULL`.
+- The fully populated object is pushed into the `storedItems` vector.
+
 After all rows are processed:
-The prepared statement is finalized.
-The method returns a std::vector<InventoryItem> containing every item in the inventory database.
+
+- The prepared statement is finalized.
+- The method returns a `std::vector<InventoryItem>` containing every item in the inventory database.
 
 This method is essential for displaying or processing the entire inventory list in the application.
 ```
